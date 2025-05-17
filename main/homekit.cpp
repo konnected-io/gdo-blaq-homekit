@@ -20,6 +20,8 @@
 #include "homekit_decl.h"
 #include <gdo.h>
 
+#include "wifi.h"
+
 #define DEVICE_NAME_SIZE 19
 #define SERIAL_NAME_SIZE 18
 
@@ -131,7 +133,14 @@ void homekit_task_entry(void* ctx) {
     hap_set_setup_code("251-02-023");  // On Oct 25, 2023, Chamberlain announced they were disabling API
                                        // access for "unauthorized" third parties.
     hap_set_setup_id("KCTD");
+
+    // wifi setup is stuck in the homekit code because homekit sets up some event handlers, and the
+    // ordering matters.
+    app_wifi_init();
+
     hap_start();
+
+    wifi_init_sta();
 
     GDOEvent e;
 

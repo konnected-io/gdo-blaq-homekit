@@ -5,7 +5,7 @@
 #include "nvs_flash.h"
 #include "esp_netif.h"
 #include "esp_log.h"
-#include <cstring>
+#include "wifi.h"
 
 #include "gdo.h"
 
@@ -13,57 +13,7 @@
 #include "homekit_decl.h"
 #include "homekit.h"
 
-static const char* WIFI_SSID = "anthill";
-static const char* WIFI_PASS = "ants in my pants";
-
 static const char* TAG = "test_main";
-
-static void event_handler(void* arg, esp_event_base_t event_base, int32_t event_id, void* event_data)
-{
-    if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_START) {
-        esp_wifi_connect();
-        ESP_LOGI(TAG, "Connecting to Wi-Fi...");
-    } else if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_DISCONNECTED) {
-        ESP_LOGI(TAG, "Disconnected from Wi-Fi. Reconnecting...");
-        esp_wifi_connect();
-    } else if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP) {
-        ip_event_got_ip_t* event = (ip_event_got_ip_t*) event_data;
-        ESP_LOGI(TAG, "Got IP: " IPSTR, IP2STR(&event->ip_info.ip));
-    }
-}
-
-void wifi_init_sta()
-{
-    esp_netif_create_default_wifi_sta();
-
-    wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
-    ESP_ERROR_CHECK(esp_wifi_init(&cfg));
-
-    // Register event handlers
-    esp_event_handler_instance_t instance_any_id;
-    esp_event_handler_instance_t instance_got_ip;
-    ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT,
-                                                        ESP_EVENT_ANY_ID,
-                                                        &event_handler,
-                                                        nullptr,
-                                                        &instance_any_id));
-    ESP_ERROR_CHECK(esp_event_handler_instance_register(IP_EVENT,
-                                                        IP_EVENT_STA_GOT_IP,
-                                                        &event_handler,
-                                                        nullptr,
-                                                        &instance_got_ip));
-
-    wifi_config_t wifi_config{};
-    strncpy(reinterpret_cast<char*>(wifi_config.sta.ssid), WIFI_SSID, sizeof(wifi_config.sta.ssid));
-    strncpy(reinterpret_cast<char*>(wifi_config.sta.password), WIFI_PASS, sizeof(wifi_config.sta.password));
-    wifi_config.sta.threshold.authmode = WIFI_AUTH_WPA2_PSK;
-
-    ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
-    ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &wifi_config));
-    ESP_ERROR_CHECK(esp_wifi_start());
-
-    ESP_LOGI(TAG, "Wi-Fi initialization completed.");
-}
 
 static void gdo_event_handler(const gdo_status_t* status, gdo_cb_event_t event, void *arg)
 {
@@ -143,18 +93,6 @@ extern "C" void app_main(void)
     gdo_conf.uart_tx_pin = GPIO_NUM_1;
     gdo_conf.uart_rx_pin = GPIO_NUM_2;
     gdo_conf.obst_in_pin = GPIO_NUM_5;
-
-    // Initialize NVS
-    ESP_ERROR_CHECK(nvs_flash_init());
-
-    // Initialize TCP/IP stack
-    ESP_ERROR_CHECK(esp_netif_init());
-
-    // Initialize the event loop
-    ESP_ERROR_CHECK(esp_event_loop_create_default());
-
-    // Initialize and connect to Wi-Fi
-    wifi_init_sta();
 
     ESP_ERROR_CHECK(gdo_init(&gdo_conf));
     ESP_ERROR_CHECK(gdo_start(gdo_event_handler, NULL));
