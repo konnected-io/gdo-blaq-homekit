@@ -1,3 +1,6 @@
 [submodule "components/gdolib"]
 	path = components/gdolib
 	url = https://github.com/konnected-io/gdolib.git
+[submodule "esp-homekit-sdk"]
+	path = esp-homekit-sdk
+	url = https://github.com/espressif/esp-homekit-sdk.git

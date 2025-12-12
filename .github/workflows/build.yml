@@ -10,18 +10,13 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    
+
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-    
-    - name: Checkout ESP HomeKit SDK
+    - name: Checkout repository with submodules
       uses: actions/checkout@v4
       with:
-        repository: espressif/esp-homekit-sdk
-        path: esp/esp-homekit-sdk
-        ref: bfbcd6e749635d97645380b9d7b32274553fe017
-    
+        submodules: recursive
+
     - name: ESP-IDF Build
       uses: espressif/esp-idf-ci-action@v1
       with:
@@ -30,7 +25,7 @@ jobs:
         path: '.'
         command: |
           idf.py build
-    
+
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
       with:
@@ -39,17 +34,17 @@ jobs:
           build/konnected-homekit.bin
           build/bootloader/bootloader.bin
           build/partition_table/partition-table.bin
-          build/flash_args
+          build/flash_argshttps://github.com/espressif/esp-homekit-sdk.git
           build/flasher_args.json
         if-no-files-found: error
-    
+
     - name: Upload build size report
       if: success()
       run: |
         idf.py size > size-report.txt
         cat size-report.txt
       continue-on-error: true
-    
+
     - name: Archive build size report
       uses: actions/upload-artifact@v4
       if: success()
