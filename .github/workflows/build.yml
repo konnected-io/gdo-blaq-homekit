@@ -17,7 +17,7 @@ jobs:
       with:
         submodules: recursive
 
-    - name: ESP-IDF Build
+    - name: Build and Generate Combined Firmware
       uses: espressif/esp-idf-ci-action@v1
       with:
         esp_idf_version: v5.4.1
@@ -25,15 +25,12 @@ jobs:
         path: '.'
         command: |
           idf.py build
-
-    - name: Generate combined firmware
-      run: |
-        esptool.py --chip esp32s3 merge_bin \
-          -o build/konnected-gdo-blaq-homekit.bin \
-          --flash_mode dio --flash_size detect --flash_freq 80m \
-          0x0 build/bootloader/bootloader.bin \
-          0x8000 build/partition_table/partition-table.bin \
-          0x10000 build/konnected-homekit.bin
+          esptool.py --chip esp32s3 merge_bin \
+            -o build/konnected-gdo-blaq-homekit.bin \
+            --flash_mode dio --flash_size detect --flash_freq 80m \
+            0x0 build/bootloader/bootloader.bin \
+            0x8000 build/partition_table/partition-table.bin \
+            0x10000 build/konnected-homekit.bin
 
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
