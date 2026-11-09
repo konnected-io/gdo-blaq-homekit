@@ -94,13 +94,15 @@ static void gdo_event_handler(const gdo_status_t* status, gdo_cb_event_t event, 
 
 // esp_restart() invokes this before resetting the UART peripheral. Disconnect
 // its matrix route first so losing UART inversion cannot drive the opener line.
-// Then release both pins as inputs.
+// Then release both pins as inputs, with TX pulled down so the opener line
+// stays idle (matches the konnected-esphome panic handler).
 // No queued door commands, delays, allocation, or driver teardown here.
 // This covers orderly software restarts, not power loss or a hard reset.
 static void gdo_uart_shutdown(void)
 {
     esp_rom_gpio_connect_out_signal(GDO_UART_TX_PIN, SIG_GPIO_OUT_IDX, false, false);
     gpio_set_direction(GDO_UART_TX_PIN, GPIO_MODE_INPUT);
+    gpio_pulldown_en(GDO_UART_TX_PIN);
     gpio_set_direction(GDO_UART_RX_PIN, GPIO_MODE_INPUT);
 }
 
