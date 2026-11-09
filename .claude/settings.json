@@ -1,0 +1,28 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "f=$(jq -r \".tool_input.file_path // empty\"); case \"$f\" in */components/gdolib/*|*/components/nvs_wifi_connect/*|*/esp-homekit-sdk/*) jq -n --arg f \"$f\" \"{hookSpecificOutput:{hookEventName:\\\"PreToolUse\\\",permissionDecision:\\\"deny\\\",permissionDecisionReason:(\\\"\\\\(\\$f) is inside a vendored git submodule. Make the change upstream (e.g. konnected-io/gdolib) and bump the submodule instead.\\\")}}\";; esac",
+            "statusMessage": "Checking for vendored submodule edits"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/format-changed-lines.sh 2>/dev/null || true",
+            "statusMessage": "clang-format changed lines"
+          }
+        ]
+      }
+    ]
+  }
+}

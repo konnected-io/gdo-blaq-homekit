@@ -1,0 +1,11 @@
+# Matches the existing style in main/. Vendored submodules are not formatted.
+BasedOnStyle: LLVM
+IndentWidth: 4
+ColumnLimit: 140
+BreakBeforeBraces: Linux          # function braces on their own line, control-flow braces attached
+AllowShortFunctionsOnASingleLine: Empty
+AllowShortIfStatementsOnASingleLine: Never
+IndentCaseLabels: false
+# Include order matters for ESP-IDF (FreeRTOS.h must precede task.h/queue.h)
+SortIncludes: Never
+MaxEmptyLinesToKeep: 2
